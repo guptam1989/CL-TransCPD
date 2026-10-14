@@ -1,4 +1,4 @@
-﻿# CL-TransCPD
+# CL-TransCPD
 
 **Contrastive Cross-Lead Transformer for Online Change-Point Detection and Change-Triggered Diagnosis in Multi-Lead ECG**
 
@@ -15,7 +15,7 @@ CL-TransCPD monitors a 12-lead ECG stream online, raises an alarm when the cardi
 
 | Phase | What it does |
 |---|---|
-| Signal conditioning | 0.5â€“40 Hz band-pass filtering at 100 Hz, heart-rate-adaptive two-cycle segmentation (IHRAS), a learned time-frequency gate (HTFP) and singular spectrum analysis denoising (RSSA) |
+| Signal conditioning | 0.5–40 Hz band-pass filtering at 100 Hz, heart-rate-adaptive two-cycle segmentation (IHRAS), a learned time-frequency gate (HTFP) and singular spectrum analysis denoising (RSSA) |
 | Cross-Lead Transformer and change score | patch tokens per lead, attention within each lead and across the 12 leads, and an online change score that measures the deviation of each segment from a moving-average reference of the current state |
 | Change-triggered diagnosis | after an alarm, four feature streams (time-domain intervals, CLS context, attention statistics, cross-lead graph) are classified by a stacked ensemble (SkEnsem) into NORM, MI, STTC, CD and HYP |
 
@@ -23,7 +23,7 @@ The encoder is trained with **contrastive change-point pretraining (CCPP)**, a t
 
 The evaluation protocol is part of the contribution:
 
-* **PTB-XL** official folds (1â€“8 training, 9 validation, 10 test) for classification;
+* **PTB-XL** official folds (1–8 training, 9 validation, 10 test) for classification;
 * **PTB-XL-CPD**, a change-point benchmark built from concatenated PTB-XL records, with nuisance junctions, splice-only controls, same-patient streams, and modified copies of the test streams that expose junction artefacts;
 * seven unsupervised change-point detectors and a supervised reference detector (ResNet-CPD) scored with the same change score;
 * zero-shot detection of real ischaemia onsets during coronary balloon inflation (**STAFF III**), reported against chance-level recall;
@@ -37,19 +37,19 @@ All thresholds and score settings are selected on validation data only.
 
 ```
 experiments/
-â”œâ”€â”€ clcpd/                 Python package
-â”‚   â”œâ”€â”€ signal/            filtering, QRS detection, IHRAS segmentation, SSA, noise
-â”‚   â”œâ”€â”€ data/              PTB-XL, PTB Diagnostic, STAFF III, NSTDB loaders; stream builder; CCPP triplets
-â”‚   â”œâ”€â”€ models/            Cross-Lead Transformer, HTFP, losses, CPD and classification baselines
-â”‚   â”œâ”€â”€ features/          time-domain, attention and cross-lead graph features
-â”‚   â”œâ”€â”€ classify/          SkEnsem stacked ensemble
-â”‚   â”œâ”€â”€ eval/              classification and change-point metrics, statistics
-â”‚   â”œâ”€â”€ online.py          online detection loop, calibration, PR sweeps
-â”‚   â””â”€â”€ pipeline.py        shared utilities (caches, variants, model I/O)
-â”œâ”€â”€ configs/default.yaml   all settings (overridable as key=value on the command line)
-â”œâ”€â”€ scripts/               entry points (one per stage, see below)
-â”œâ”€â”€ pbs/                   PBS job arrays for running the full study on a cluster
-â””â”€â”€ requirements.txt
+├── clcpd/                 Python package
+│   ├── signal/            filtering, QRS detection, IHRAS segmentation, SSA, noise
+│   ├── data/              PTB-XL, PTB Diagnostic, STAFF III, NSTDB loaders; stream builder; CCPP triplets
+│   ├── models/            Cross-Lead Transformer, HTFP, losses, CPD and classification baselines
+│   ├── features/          time-domain, attention and cross-lead graph features
+│   ├── classify/          SkEnsem stacked ensemble
+│   ├── eval/              classification and change-point metrics, statistics
+│   ├── online.py          online detection loop, calibration, PR sweeps
+│   └── pipeline.py        shared utilities (caches, variants, model I/O)
+├── configs/default.yaml   all settings (overridable as key=value on the command line)
+├── scripts/               entry points (one per stage, see below)
+├── pbs/                   PBS job arrays for running the full study on a cluster
+└── requirements.txt
 ```
 
 ---
@@ -125,13 +125,13 @@ python scripts/list_tasks.py cpd --show
 
 | Stage | Script | Tasks |
 |---|---|---|
-| pretrain | `pretrain_clt.py`, `extract_features.py` | 38 (5 seeds of the full model, 11 ablations Ã— 3 seeds) |
+| pretrain | `pretrain_clt.py`, `extract_features.py` | 38 (5 seeds of the full model, 11 ablations × 3 seeds) |
 | classifiers | `train_classifiers.py` | 85 |
-| cls_baselines | `train_cls_baselines.py` | 60 (6 models Ã— 2 tasks Ã— 5 seeds) |
+| cls_baselines | `train_cls_baselines.py` | 60 (6 models × 2 tasks × 5 seeds) |
 | cpd | `run_cpd.py` | 66 (classical detectors run once; deep detectors 5 seeds) |
 | robustness | `robustness.py` | 17 |
 
-**3. Validation design study** (score representation, Î¼ and Î·, with and without the post-change negative; fold 9 only)
+**3. Validation design study** (score representation, μ and η, with and without the post-change negative; fold 9 only)
 
 ```bash
 python scripts/pretrain_clt.py --variant cand_pureneg   --seed 0
