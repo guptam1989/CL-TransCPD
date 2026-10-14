@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -N clcpd_assets
+#PBS -q gpu
+#PBS -l select=1:ncpus=4:ngpus=1:mem=32gb
+#PBS -l walltime=01:00:00
+#PBS -j oe
+#PBS -o logs/
+# Parameters / FLOPs / latency (CPU single thread + GPU), then all tables, macros and figures for Main.tex.
+# For the CPU latency reported in the paper, prefer an otherwise idle node.
+source pbs/env.sh
+python scripts/benchmark_latency.py
+python scripts/make_paper_assets.py
+echo "Copy \$PAPER_DIR/results and \$PAPER_DIR/figures/generated back next to Main.tex if PAPER_DIR is not the manuscript folder."

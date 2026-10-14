@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -N clcpd_cpd
+#PBS -q gpu
+#PBS -l select=1:ncpus=8:ngpus=1:mem=64gb
+#PBS -l walltime=08:00:00
+#PBS -j oe
+#PBS -o logs/
+# Online change-point detection (CL-TransCPD variants and the seven baselines): validation calibration,
+# five test stream sets, controls, same-patient streams, STAFF III, tolerance and mu sensitivity.
+source pbs/env.sh
+python scripts/run_cpd.py

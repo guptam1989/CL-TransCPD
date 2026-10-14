@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -N clcpd_classifiers
+#PBS -q gpu
+#PBS -l select=1:ncpus=24:ngpus=1:mem=96gb
+#PBS -l walltime=06:00:00
+#PBS -j oe
+#PBS -o logs/
+# SkEnsem on the four feature streams, stream/variant ablations, classical and prior-work baselines.
+# Mostly CPU-bound (tree ensembles); the GPU is only used by the small 1-D CNN base learner.
+source pbs/env.sh
+python scripts/train_classifiers.py

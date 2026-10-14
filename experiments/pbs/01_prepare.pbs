@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -N clcpd_prepare
+#PBS -q workq
+#PBS -l select=1:ncpus=16:mem=64gb
+#PBS -l walltime=06:00:00
+#PBS -j oe
+#PBS -o logs/
+# Caches PTB-XL, R peaks, time-domain features, CPD stream sets, PTB Diagnostic, STAFF III, NSTDB.
+# EDIT the queue (-q) above for your cluster; this stage needs no GPU.
+source pbs/env.sh
+python scripts/prepare_data.py --jobs "${NCPUS:-16}"

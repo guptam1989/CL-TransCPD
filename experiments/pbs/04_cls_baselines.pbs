@@ -1,0 +1,11 @@
+#!/bin/bash
+#PBS -N clcpd_clsbase
+#PBS -q gpu
+#PBS -l select=1:ncpus=8:ngpus=1:mem=64gb
+#PBS -l walltime=04:00:00
+#PBS -j oe
+#PBS -o logs/
+# Deep end-to-end classifiers (ResNet1d-Wang, Inception1d, BiLSTM, Transformer, PatchTST, CLOCS),
+# multi-label and single-label, 5 seeds each; single-label models are also fine-tuned on PTB Diagnostic.
+source pbs/env.sh
+python scripts/train_cls_baselines.py

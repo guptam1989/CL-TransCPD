@@ -1,0 +1,151 @@
+# CL-TransCPD experiment configuration.
+# Every value can be overridden from the command line as  key.subkey=value
+# ${VAR:-default} is expanded from the environment.
+
+paths:
+  data_root: ${DATA_ROOT:-./data/physionet.org/files}   # folder that contains the PhysioNet datasets
+  ptbxl_dir: ptb-xl/1.0.3
+  ptbdiag_dir: ptbdb/1.0.0
+  staff3_dir: staffiii/1.0.0
+  nstdb_dir: nstdb/1.0.0
+  work_dir: ${WORK_DIR:-./work}                         # caches, checkpoints, raw results
+  paper_dir: ${PAPER_DIR:-..}                           # manuscript root (receives results/ and figures/generated/)
+
+data:
+  fs: 100                       # all signals are resampled to 100 Hz
+  n_leads: 12
+  bandpass: [0.5, 40.0]
+  train_folds: [1, 2, 3, 4, 5, 6, 7, 8]
+  val_folds: [9]
+  test_folds: [10]
+  ptbdiag_mapping: strict       # strict | extended (see clcpd/data/ptbdiag.py)
+  ptbdiag_crop_s: 10
+  ptbdiag_cv_folds: 5
+  staff3_exclude_patients: [1, 4, 5, 6, 89]   # lead/sign reversals reported by the database curators
+  max_records: 0                # >0 only for smoke tests
+
+segmentation:
+  mode: ihras                   # ihras | fixed
+  n_cycles: 2
+  n_rr_median: 5
+  hr_min: 30
+  hr_max: 200
+  ref_len: 400                  # omega_ref = omega_max (two cycles at 30 bpm, 100 Hz)
+  fixed_len: 200                # fixed-window ablation: two cycles at 60 bpm
+  hop_frac: 0.5
+  confirm_delay_s: 0.25         # latency of the causal R-peak confirmation
+
+htfp:
+  enabled: true
+  n_fft: 64
+  hop: 16
+  channels: 16
+  pretrain_epochs: 10
+  pretrain_snr_db: [-6, 24]
+  lr: 1.0e-3
+
+rssa:
+  enabled: true
+  window: 25
+  energy: 0.98
+  max_rank: 10
+
+clt:
+  d_model: 128
+  n_heads: 4
+  n_layers: 4
+  d_ff: 256
+  patch: 25
+  dropout: 0.1
+  cross_lead: true              # false = temporal-only ablation
+  temporal: true                # false = cross-lead-only ablation
+  dec_bottleneck: 32
+  dec_hidden: 256
+  cls_hidden: 64                # = d_model / 2 (dimension of F_cls)
+
+ccpp:
+  loss: triplet                 # triplet | infonce | none
+  margin: 1.0
+  temperature: 0.1
+  lambda_rec: 0.5
+  lambda_cls: 0.5
+  nuisance_positive: true       # same-label/different-patient splices are treated as positives
+  pure_negative: true           # also contrast against a complete segment of the post-change recording
+                                # (selected on validation streams, see scripts/design_study.py)
+  harmonise_splice: true
+  epochs: 60
+  anchors_per_epoch: 40000
+  batch_size: 256
+  lr: 1.0e-3
+  lr_min: 1.0e-5
+  weight_decay: 1.0e-4
+  warmup_epochs: 3
+  num_workers: 8
+  amp: true
+  patience: 15
+
+score:
+  mu: 1.0                       # weight of the latent deviation (1 - mu on reconstruction); selected on validation
+  ema_alpha: 0.1
+  latent: auto                  # auto = choose among latent_candidates by validation AUPRC (per trained model)
+  latent_candidates: [prob, cls, z]
+  warmup_segments: 3
+  percentile_grid: [80, 85, 90, 95, 97.5, 99, 99.5, 99.8, 99.9]   # Lambda candidates, selected on validation
+  n_pr_thresholds: 60
+
+streams:
+  n_sets: 5
+  records_per_stream: [3, 6]
+  p_change: 0.5
+  tolerance_s: 4.0
+  tolerance_grid_s: [2.0, 3.0, 4.0, 5.0]
+  crossfade_ms: 40
+  harmonise: true
+  offset_decay_s: 0.32          # DC-alignment offset decays like a 0.5-Hz high-pass (no persistent level step)
+  n_control: 300
+  post_buffer_s: 10.0           # post-alarm buffer used for triggered diagnosis
+  staff3_tolerance_s: 120
+  staff3_pre_s: 120
+  staff3_min_pre_s: 30
+
+features:
+  streams: [td, cls, att, graph]
+  qrsv: false
+  selection: mean_importance
+
+skensem:
+  n_folds: 5
+  n_estimators: 200
+  max_depth: 4
+  learning_rate: 0.05
+  cnn_epochs: 60
+
+cls_baselines:
+  models: [resnet1d_wang, inception1d, bilstm, transformer, patchtst, clocs]
+  epochs: 50
+  batch_size: 128
+  lr: 1.0e-3
+  weight_decay: 1.0e-2
+  clocs_pretrain_epochs: 50
+
+cpd_baselines:
+  methods: [cusum, bocpd, rulsif, tire, lstm_ae, tscp2, ocae, sup_resnet]   # sup_resnet: supervised reference
+  window_s: 2.0
+  hop_s: 1.0
+  epochs: 30
+  pca_dims: 10
+  bocpd_hazard: 20
+  rulsif_n: 4
+  rulsif_alpha: 0.1
+
+robustness:
+  snr_db: [24, 18, 12, 6, 0]
+  noise_types: [bw, em, ma]
+  lead_dropout: [0, 3, 6, 9]
+  hr_bins: [0, 50, 60, 80, 100, 120, 300]
+
+eval:
+  seeds: [0, 1, 2, 3, 4]
+  ablation_seeds: [0, 1, 2]
+  bootstrap: 1000
+  ece_bins: 15

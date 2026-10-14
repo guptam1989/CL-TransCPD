@@ -1,0 +1,10 @@
+#!/bin/bash
+#PBS -N clcpd_robust
+#PBS -q gpu
+#PBS -l select=1:ncpus=8:ngpus=1:mem=64gb
+#PBS -l walltime=06:00:00
+#PBS -j oe
+#PBS -o logs/
+# NSTDB noise (bw/em/ma at 24..0 dB) and lead dropout, CPD and classification.
+source pbs/env.sh
+python scripts/robustness.py

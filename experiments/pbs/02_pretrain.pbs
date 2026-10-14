@@ -1,0 +1,13 @@
+#!/bin/bash
+#PBS -N clcpd_pretrain
+#PBS -q gpu
+#PBS -l select=1:ncpus=12:ngpus=1:mem=64gb
+#PBS -l walltime=08:00:00
+#PBS -j oe
+#PBS -o logs/
+# Array job over (variant, seed); the range is set by submit_all.sh:
+#   qsub -J 0-$(( $(python scripts/list_tasks.py pretrain) - 1 )) pbs/02_pretrain.pbs
+# Torque users: replace -J by -t and PBS_ARRAY_INDEX by PBS_ARRAYID (the scripts read both).
+source pbs/env.sh
+python scripts/pretrain_clt.py ccpp.num_workers="${NCPUS:-12}"
+python scripts/extract_features.py
